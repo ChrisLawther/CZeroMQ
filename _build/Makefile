@@ -5,8 +5,6 @@ Jobs=8
 OptFlags="-O3 -fembed-bitcode -fmodules"
 MinIosVersion=12.0
 
-BuildDir=_build
-
 ZmqSrc=zeromq-${ZmqVersion}
 ZmqTgz=${ZmqSrc}.tar.gz
 ZmqUrl=https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${ZmqTgz}
@@ -14,9 +12,6 @@ ZmqUrl=https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${ZmqTg
 SodiumSrc=libsodium-${SodiumVersion}
 SodiumTgz=${SodiumSrc}.tar.gz
 SodiumUrl=https://github.com/jedisct1/libsodium/archive/${SodiumVersion}.tar.gz
-
-${BuildDir}:
-	mkdir ${BuildDir}
 
 ${ZmqTgz}:
 	curl -L -O ${ZmqUrl}
@@ -30,9 +25,14 @@ ${SodiumTgz}:
 ${SodiumSrc}: ${SodiumTgz}
 	tar -zxvf ${SodiumTgz}
 
-build: ${SodiumSrc} ${ZmqSrc}
-	echo "Would build in $(pwd)"
+srcs: ${SodiumSrc} ${ZmqSrc}
+	echo "TOOD: Actually build stuff"
 
-srcs: ${BuildDir}
-	cd ${BuildDir} && make -f ../Makefile build
-
+framework: srcs
+	xcodebuild \
+		-create-xcframework \
+		-library _build/zeromq-4.3.3/_build/platforms/simulator/lib/libzmq.a \
+		-headers universal/include \
+		-library _build/zeromq-4.3.3/_build/platforms/device/lib/libzmq.a \
+		-headers universal/include \
+		-output ../libzmq.xcframework
