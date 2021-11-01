@@ -35,7 +35,7 @@
 set -euo pipefail
 
 # Print commands and expanded vars
-set -x
+# set -x
 
 # Library versions (used to fetch source tarballs)
 SodiumVersion="1.0.18"
@@ -174,7 +174,7 @@ BuildSodium() {
 }
 
 makeXcFramework() {
-	rm -rf libzmq.xcframework
+	rm -rf ../libzmq.xcframework
 	
 	xcodebuild \
 		-create-xcframework \
@@ -182,7 +182,7 @@ makeXcFramework() {
 		-headers universal/include \
 		-library zeromq-${ZmqVersion}/_build/platforms/device/lib/libzmq.a \
 		-headers universal/include \
-		-output libzmq.xcframework
+		-output ../libzmq.xcframework
 }
 
 BuildSodium

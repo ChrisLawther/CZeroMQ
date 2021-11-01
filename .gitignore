@@ -1,3 +1,4 @@
 .DS_Store
 _build/zeromq*/
 _build/libsodium*/
+_build/universal/include/z*.h
