@@ -42,7 +42,7 @@ SodiumVersion="1.0.18"
 ZmqVersion="4.3.3"
 
 # Common settings:
-ScriptDir="$( cd "$( dirname "$0" )" && pwd )"
+buildRoot="$( cd "$( dirname "$0" )" && pwd )"
 
 # Compiler options
 OPT_FLAGS="-O3 -fembed-bitcode -fmodules"
@@ -123,32 +123,34 @@ BuildSim() {
     Build
 }
 
-BuildUniversal() {
-    cd "${PLATFORMS}/${PLATFORM_ARM}/lib"
-    LIB_NAME=`find . -iname *.a`
-    cd -
-    mkdir -p "${UNIVERSAL}" &> /dev/null
-    lipo -create -output "${UNIVERSAL}/${LIB_NAME}" \
-        "${PLATFORMS}/${PLATFORM_ARM}/lib/${LIB_NAME}" \
-        "${PLATFORMS}/${PLATFORM_ISIM}/lib/${LIB_NAME}"
-}
+# BuildUniversal() {
+#     cd "${PLATFORMS}/${PLATFORM_ARM}/lib"
+#     LIB_NAME=`find . -iname *.a`
+#     cd -
+#     mkdir -p "${UNIVERSAL}" &> /dev/null
+#     lipo -create -output "${UNIVERSAL}/${LIB_NAME}" \
+#         "${PLATFORMS}/${PLATFORM_ARM}/lib/${LIB_NAME}" \
+#         "${PLATFORMS}/${PLATFORM_ISIM}/lib/${LIB_NAME}"
+# }
 
 BuildZmq() {
     GetZmq
     echo "Building ZMQ..."
     ZmqRoot="zeromq-${ZmqVersion}"
-    PLATFORMS="${ScriptDir}/_build/${ZmqRoot}/_build/platforms"
-    PREFIX="${ScriptDir}/universal"
-    UNIVERSAL="${ScriptDir}/universal/lib"
+    PLATFORMS="${buildRoot}/${ZmqRoot}/_build/platforms"
+    PREFIX="${buildRoot}/universal"
+    UNIVERSAL="${buildRoot}/universal/lib"
     SodiumRoot="libsodium-${SodiumVersion}"
-    ADDITIONAL="--with-libsodium=${ScriptDir}/_build/${SodiumRoot}/_build/universal"
+    ADDITIONAL="--with-libsodium=${buildRoot}/${SodiumRoot}/_build/universal"
     
     mkdir -p "$UNIVERSAL"
-    cd "${ZmqRoot}"
+    (
+    	cd "${ZmqRoot}"
     
-    ./autogen.sh
-    BuildPhone
-    BuildSim
+	    ./autogen.sh
+    	BuildPhone
+	    BuildSim
+	)
     # BuildUniversal
 }
 
@@ -156,27 +158,37 @@ BuildSodium() {
     GetSodium
     echo "Building libSodium..."
     SodiumRoot="libsodium-${SodiumVersion}"
-    PREFIX="${ScriptDir}/_build/${SodiumRoot}/_build"
+    PREFIX="${buildRoot}/${SodiumRoot}/_build"
     PLATFORMS="${PREFIX}/platforms"
     UNIVERSAL="${PREFIX}/universal"
     
     mkdir -p "$UNIVERSAL"
-    
-    cd "$SodiumRoot"
-    ./autogen.sh
-    ADDITIONAL=""
-    BuildPhone
-    BuildSim
+    (
+    	cd "$SodiumRoot"
+	    ./autogen.sh
+	    ADDITIONAL=""
+    	BuildPhone
+	    BuildSim
+	)
     # BuildUniversal
 }
 
+makeXcFramework() {
+	rm -rf libzmq.xcframework
+	
+	xcodebuild \
+		-create-xcframework \
+		-library zeromq-${ZmqVersion}/_build/platforms/simulator/lib/libzmq.a \
+		-headers universal/include \
+		-library zeromq-${ZmqVersion}/_build/platforms/device/lib/libzmq.a \
+		-headers universal/include \
+		-output libzmq.xcframework
+}
 
-mkdir -p "${ScriptDir}"/_build
+BuildSodium
 
-cd "${ScriptDir}"/_build
-# BuildSodium
-
-cd "${ScriptDir}"/_build
 BuildZmq
+
+makeXcFramework
 
 echo "Done! 😀"
