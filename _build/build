@@ -47,7 +47,10 @@ buildRoot="$( cd "$( dirname "$0" )" && pwd )"
 # Compiler options
 OPT_FLAGS="-O3 -fembed-bitcode -fmodules"
 MAKE_JOBS=8
+
 MIN_IOS_VERSION=12.0
+MIN_TVOS_VERSION=12.0
+MIN_WATCHOS_VERSION=7.0
 
 Build() {
     # Ensure -fembed-bitcode builds, as workaround for libtool macOS bug
@@ -60,7 +63,8 @@ Build() {
     export CXXFLAGS="${HOST_FLAGS} ${OPT_FLAGS}"
     export LDFLAGS="${HOST_FLAGS}"
 
-    EXEC_PREFIX="${PLATFORMS}/${PLATFORM}"
+    EXEC_PREFIX="${PLATFORMS}/${SDK}"
+    echo "*** Building ${SDK} for ${PLATFORM} ***"
     # --disable-shared to avoid Xcode loading dylibs even when staticlibs exist
     ./configure \
         --host="${CHOST}" \
@@ -84,9 +88,15 @@ GetZmq() {
     if [ ! -e "$Tar" ]
     then
         curl -L -O $Url
-        tar xzf $Tar    
     else
         echo "Already had '$Tar'"
+    fi
+    
+    if [ ! -d "zeromq-${ZmqVersion}" ]
+    then
+        tar xzf "$Tar"    
+    else
+    	echo ".. already expanded"
     fi
 }
 
@@ -97,41 +107,82 @@ GetSodium() {
     if [ ! -e "$Tar" ]
     then
         curl -L -o "$Tar" https://github.com/jedisct1/libsodium/archive/${SodiumVersion}.tar.gz
-        tar xzf "$Tar"
     else
         echo "Already had '$Tar'"
     fi
+    
+    if [ ! -d "libsodium-1.0.18" ]
+    then
+        tar xzf "$Tar"    
+    else
+    	echo ".. already expanded"
+    fi
+}
+
+# SDK names retrieved via `xcodebuild -showsdks`
+
+SIMULATOR_ARCHS="-arch x86_64 -arch arm64e -arch arm64"
+    
+BuildTv() {
+	if [[ $PLATFORM == "device" ]]
+	then
+		SDK=appletvos
+	    ARCH_FLAGS="-arch arm64"
+	    VERSION_FLAGS="-mappletvos-version-min=${MIN_TVOS_VERSION}"
+	else
+		SDK=appletvsimulator
+		ARCH_FLAGS=${SIMULATOR_ARCHS}
+	    VERSION_FLAGS="-mappletvsimulator-version-min=${MIN_TVOS_VERSION}"
+	fi
+    HOST_FLAGS="${ARCH_FLAGS} ${VERSION_FLAGS} -isysroot $(xcrun --sdk ${SDK} --show-sdk-path)"
+    Build
+}
+
+BuildWatch() {
+	if [[ $PLATFORM == "device" ]]
+	then
+		SDK=watchos
+	    ARCH_FLAGS="-arch armv7k -arch arm64_32"
+	    VERSION_FLAGS="-mwatchos-version-min=${MIN_WATCHOS_VERSION}"
+	else
+		SDK=watchsimulator
+		ARCH_FLAGS=${SIMULATOR_ARCHS}
+		VERSION_FLAGS="-mwatchsimulator-version-min=${MIN_WATCHOS_VERSION}"
+	fi
+    HOST_FLAGS="${ARCH_FLAGS} ${VERSION_FLAGS} -isysroot $(xcrun --sdk ${SDK} --show-sdk-path)"
+    Build
 }
 
 BuildPhone() {
-    SDK="iphoneos"
+	if [[ $PLATFORM == "device" ]]
+	then
+		SDK=iphoneos
+	    ARCH_FLAGS="-arch arm64 -arch arm64e"
+	    VERSION_FLAGS="-miphoneos-version-min=${MIN_IOS_VERSION}"
+	else
+		SDK=iphonesimulator
+		ARCH_FLAGS=${SIMULATOR_ARCHS}
+	    VERSION_FLAGS="-miphonesimulator-version-min=${MIN_IOS_VERSION}"
+	fi
+    HOST_FLAGS="${ARCH_FLAGS} ${VERSION_FLAGS} -isysroot $(xcrun --sdk ${SDK} --show-sdk-path)"
+    Build
+}
+
+BuildDevices() {
     PLATFORM="device"
-    PLATFORM_ARM=${PLATFORM}
-    ARCH_FLAGS="-arch arm64 -arch arm64e"  # -arch armv7 -arch armv7s
-    HOST_FLAGS="${ARCH_FLAGS} -miphoneos-version-min=${MIN_IOS_VERSION} -isysroot $(xcrun --sdk ${SDK} --show-sdk-path)"
-    CHOST="arm-apple-darwin"
-    Build
+    CHOST="arm-apple-darwin"    
+	BuildPhone
+	BuildTv
+	BuildWatch
 }
 
-BuildSim() {
-    SDK="iphonesimulator"
+BuildSims() {
     PLATFORM="simulator"
-    PLATFORM_ISIM=${PLATFORM}
-    ARCH_FLAGS="-arch x86_64 -arch arm64e -arch arm64"
-    HOST_FLAGS="${ARCH_FLAGS} -mios-simulator-version-min=${MIN_IOS_VERSION} -isysroot $(xcrun --sdk ${SDK} --show-sdk-path)"
     CHOST="x86_64-apple-darwin"
-    Build
+	BuildPhone
+	BuildTv
+	BuildWatch
 }
-
-# BuildUniversal() {
-#     cd "${PLATFORMS}/${PLATFORM_ARM}/lib"
-#     LIB_NAME=`find . -iname *.a`
-#     cd -
-#     mkdir -p "${UNIVERSAL}" &> /dev/null
-#     lipo -create -output "${UNIVERSAL}/${LIB_NAME}" \
-#         "${PLATFORMS}/${PLATFORM_ARM}/lib/${LIB_NAME}" \
-#         "${PLATFORMS}/${PLATFORM_ISIM}/lib/${LIB_NAME}"
-# }
 
 BuildZmq() {
     GetZmq
@@ -148,8 +199,8 @@ BuildZmq() {
     	cd "${ZmqRoot}"
     
 	    ./autogen.sh
-    	BuildPhone
-	    BuildSim
+    	BuildDevices
+	    BuildSims
 	)
     # BuildUniversal
 }
@@ -167,8 +218,8 @@ BuildSodium() {
     	cd "$SodiumRoot"
 	    ./autogen.sh
 	    ADDITIONAL=""
-    	BuildPhone
-	    BuildSim
+    	BuildDevices
+	    BuildSims
 	)
     # BuildUniversal
 }
@@ -178,16 +229,24 @@ makeXcFramework() {
 	
 	xcodebuild \
 		-create-xcframework \
-		-library zeromq-${ZmqVersion}/_build/platforms/simulator/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/platforms/iphonesimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/platforms/device/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/platforms/iphoneos/lib/libzmq.a \
+		-headers universal/include \
+		-library zeromq-${ZmqVersion}/_build/platforms/watchsimulator/lib/libzmq.a \
+		-headers universal/include \
+		-library zeromq-${ZmqVersion}/_build/platforms/watchos/lib/libzmq.a \
+		-headers universal/include \
+		-library zeromq-${ZmqVersion}/_build/platforms/appletvsimulator/lib/libzmq.a \
+		-headers universal/include \
+		-library zeromq-${ZmqVersion}/_build/platforms/appletvos/lib/libzmq.a \
 		-headers universal/include \
 		-output ../libzmq.xcframework
 }
 
-BuildSodium
+# BuildSodium
 
-BuildZmq
+# BuildZmq
 
 makeXcFramework
 
