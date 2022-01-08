@@ -1,0 +1,6 @@
+module CZeroMQ {
+    header "../../Headers/Czeromq-Bridging-Header.h"
+    link "zmq"
+    export *
+}
+
