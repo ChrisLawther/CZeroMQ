@@ -2,10 +2,9 @@
 
 A SPM system library of ZMQ, suitable for such things as importing into a Swift-y wrapper.
 
-For use on macOS / Linux, the library installed on the system will be used.
+For use on macOS / Linux, the library installed on the system will be linked against automatically.
 
-For use on iOS (device or simulator), a locally built (cross-compiled) library is needed. The included `Build` script generates such a library, which must then be manually linked into your project.
-
+For use on iOS (device or simulator), a locally built (cross-compiled) library is needed. The included `Build` script generates such a library in the form of an `xcframework` supporting phone, appleTV and watch, for both device and simulator. This must be manually linked into your project.
 
 # libzmq
 
