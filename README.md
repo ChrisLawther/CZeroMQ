@@ -22,22 +22,7 @@ Confirm / modify the `libzmq` and `libsodium` version numbers near the top of `.
 
     ./Build
 
-The end result should be a new directory with the structure:
-
-    universal
-      +- include
-      |    +- zmq_utils.h
-      |    +- zmq.h
-      +- lib
-           +- libzmq.a
-
-Where `libzmq.a` reports:
-
-    $ file universal/lib/libzmq.a
-    universal/lib/libzmq.a: Mach-O universal binary with 3 architectures: [x86_64:current ar archive] [arm64] [arm64e]
-    universal/lib/libzmq.a (for architecture x86_64):    current ar archive
-    universal/lib/libzmq.a (for architecture arm64):    current ar archive
-    universal/lib/libzmq.a (for architecture arm64e):    current ar archive
+The end result should be a new `libzmq.xcframework`, which internally has an `Info.plist` describing the binaries contained within, stored in a structure comprising one directory per architecture+platform pair, each with a static library and header files in it.
 
 # Appendix
 

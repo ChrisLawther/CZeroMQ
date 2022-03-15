@@ -17,9 +17,6 @@ let package = Package(
         .library(name: "CZeroMQ", targets: ["CZeroMQ"]),
     ],
     targets: [
-//        .target(name: "SwiftZeroMQ",
-//                dependencies: ["CZeroMQ"]
-//               ),
         czeroMQPackage()
     ]
 )
