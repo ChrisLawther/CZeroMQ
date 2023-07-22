@@ -39,13 +39,14 @@ set -euo pipefail
 
 # Library versions (used to fetch source tarballs)
 SodiumVersion="1.0.18"
-ZmqVersion="4.3.3"
+ZmqVersion="4.3.4"
 
 # Common settings:
 buildRoot="$( cd "$( dirname "$0" )" && mkdir -p .build && cd .build && pwd )"
 
 # Compiler options
-OPT_FLAGS="-O3 -fembed-bitcode -fmodules"
+# OPT_FLAGS="-O3 -fembed-bitcode -fmodules"
+OPT_FLAGS="-O3 -fmodules"
 MAKE_JOBS=8
 
 MIN_IOS_VERSION=12.0
@@ -92,7 +93,7 @@ GetZmq() {
     else
         echo "Already had '$Tar'"
     fi
-    
+
     if [ ! -d "$buildRoot/zeromq-${ZmqVersion}" ]
     then
 		tar xzf "$buildRoot/../$Tar" -C "$buildRoot"
@@ -104,17 +105,17 @@ GetZmq() {
 GetSodium() {
     echo "Fetching libSodium..."
     Tar="libsodium-${SodiumVersion}.tar.gz"
-    
+
     if [ ! -e "$buildRoot/../$Tar" ]
     then
         curl -L -o "$buildRoot/../$Tar" https://github.com/jedisct1/libsodium/archive/${SodiumVersion}.tar.gz
     else
         echo "Already had '$Tar'"
     fi
-    
+
     if [ ! -d "$buildRoot/libsodium-${SodiumVersion}" ]
     then
-        tar xzf "$buildRoot/../$Tar" -C "$buildRoot"  
+        tar xzf "$buildRoot/../$Tar" -C "$buildRoot"
     else
     	echo ".. already expanded"
     fi
@@ -123,7 +124,7 @@ GetSodium() {
 # SDK names retrieved via `xcodebuild -showsdks`
 
 SIMULATOR_ARCHS="-arch x86_64 -arch arm64e -arch arm64"
-    
+
 BuildTv() {
 	if [[ $PLATFORM == "device" ]]
 	then
@@ -171,7 +172,7 @@ BuildPhone() {
 
 BuildDevices() {
     PLATFORM="device"
-    CHOST="arm-apple-darwin"    
+    CHOST="arm-apple-darwin"
 	BuildPhone
 	BuildTv
 	BuildWatch
@@ -193,10 +194,10 @@ BuildZmq() {
     PREFIX="${buildRoot}/universal"
     SodiumRoot="libsodium-${SodiumVersion}"
     ADDITIONAL="--with-libsodium=${buildRoot}/${SodiumRoot}/_build/universal"
-    
+
     (
     	cd "${ZmqRoot}"
-    
+
 	    ./autogen.sh
     	BuildDevices
 	    BuildSims
@@ -209,7 +210,7 @@ BuildSodium() {
     SodiumRoot="libsodium-${SodiumVersion}"
     PREFIX="${buildRoot}/universal"
     BUILDDST="${buildRoot}/${SodiumRoot}/_build"
-    
+
     (
     	cd "$SodiumRoot"
 	    ./autogen.sh
@@ -223,7 +224,7 @@ makeXcFramework() {
 	echo "🛠  Building .xcframework"
 	xcframework="$buildRoot/../libzmq.xcframework"
 	rm -rf "$xcframework"
-	
+
 	xcodebuild \
 		-create-xcframework \
 		-library zeromq-${ZmqVersion}/_build/simulator/iphonesimulator/lib/libzmq.a \
