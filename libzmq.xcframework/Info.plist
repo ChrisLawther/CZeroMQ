@@ -8,7 +8,7 @@
 			<key>HeadersPath</key>
 			<string>Headers</string>
 			<key>LibraryIdentifier</key>
-			<string>tvos-arm64_arm64e_x86_64-simulator</string>
+			<string>watchos-arm64_arm64e_x86_64-simulator</string>
 			<key>LibraryPath</key>
 			<string>libzmq.a</string>
 			<key>SupportedArchitectures</key>
@@ -18,7 +18,7 @@
 				<string>x86_64</string>
 			</array>
 			<key>SupportedPlatform</key>
-			<string>tvos</string>
+			<string>watchos</string>
 			<key>SupportedPlatformVariant</key>
 			<string>simulator</string>
 		</dict>
@@ -35,6 +35,21 @@
 			</array>
 			<key>SupportedPlatform</key>
 			<string>tvos</string>
+		</dict>
+		<dict>
+			<key>HeadersPath</key>
+			<string>Headers</string>
+			<key>LibraryIdentifier</key>
+			<string>watchos-arm64_32_armv7k</string>
+			<key>LibraryPath</key>
+			<string>libzmq.a</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64_32</string>
+				<string>armv7k</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>watchos</string>
 		</dict>
 		<dict>
 			<key>HeadersPath</key>
@@ -58,21 +73,6 @@
 			<key>HeadersPath</key>
 			<string>Headers</string>
 			<key>LibraryIdentifier</key>
-			<string>watchos-arm64_32_armv7k</string>
-			<key>LibraryPath</key>
-			<string>libzmq.a</string>
-			<key>SupportedArchitectures</key>
-			<array>
-				<string>arm64_32</string>
-				<string>armv7k</string>
-			</array>
-			<key>SupportedPlatform</key>
-			<string>watchos</string>
-		</dict>
-		<dict>
-			<key>HeadersPath</key>
-			<string>Headers</string>
-			<key>LibraryIdentifier</key>
 			<string>ios-arm64_arm64e</string>
 			<key>LibraryPath</key>
 			<string>libzmq.a</string>
@@ -88,7 +88,7 @@
 			<key>HeadersPath</key>
 			<string>Headers</string>
 			<key>LibraryIdentifier</key>
-			<string>watchos-arm64_arm64e_x86_64-simulator</string>
+			<string>tvos-arm64_arm64e_x86_64-simulator</string>
 			<key>LibraryPath</key>
 			<string>libzmq.a</string>
 			<key>SupportedArchitectures</key>
@@ -98,7 +98,7 @@
 				<string>x86_64</string>
 			</array>
 			<key>SupportedPlatform</key>
-			<string>watchos</string>
+			<string>tvos</string>
 			<key>SupportedPlatformVariant</key>
 			<string>simulator</string>
 		</dict>

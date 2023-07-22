@@ -39,7 +39,7 @@ set -euo pipefail
 
 # Library versions (used to fetch source tarballs)
 SodiumVersion="1.0.18"
-ZmqVersion="4.3.4"
+ZmqVersion="4.3.4a"
 
 # Common settings:
 buildRoot="$( cd "$( dirname "$0" )" && mkdir -p .build && cd .build && pwd )"
@@ -85,7 +85,8 @@ Build() {
 GetZmq() {
     echo "Fetching zmq..."
     Tar="zeromq-${ZmqVersion}.tar.gz"
-    Url="https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${Tar}"
+    # Url="https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${Tar}"
+    Url="https://github.com/ChrisLawther/libzmq/archive/refs/tags/v${ZmqVersion}.tar.gz"
 
     if [ ! -e "$buildRoot/../$Tar" ]
     then
@@ -94,7 +95,7 @@ GetZmq() {
         echo "Already had '$Tar'"
     fi
 
-    if [ ! -d "$buildRoot/zeromq-${ZmqVersion}" ]
+    if [ ! -d "$buildRoot/libzmq-${ZmqVersion}" ]
     then
 		tar xzf "$buildRoot/../$Tar" -C "$buildRoot"
     else
@@ -189,7 +190,7 @@ BuildSims() {
 BuildZmq() {
     GetZmq
     echo "🛠 Building ZMQ..."
-    ZmqRoot="zeromq-${ZmqVersion}"
+    ZmqRoot="libzmq-${ZmqVersion}"
     BUILDDST="${buildRoot}/${ZmqRoot}/_build"
     PREFIX="${buildRoot}/universal"
     SodiumRoot="libsodium-${SodiumVersion}"
