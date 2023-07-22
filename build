@@ -228,17 +228,17 @@ makeXcFramework() {
 
 	xcodebuild \
 		-create-xcframework \
-		-library zeromq-${ZmqVersion}/_build/simulator/iphonesimulator/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/simulator/iphonesimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/device/iphoneos/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/device/iphoneos/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/simulator/watchsimulator/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/simulator/watchsimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/device/watchos/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/device/watchos/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/simulator/appletvsimulator/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/simulator/appletvsimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library zeromq-${ZmqVersion}/_build/device/appletvos/lib/libzmq.a \
+		-library libzmq-${ZmqVersion}/_build/device/appletvos/lib/libzmq.a \
 		-headers universal/include \
 		-output "$xcframework"
 }
