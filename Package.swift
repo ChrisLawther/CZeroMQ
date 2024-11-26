@@ -3,12 +3,20 @@
 
 import PackageDescription
 
+func libzmq() -> Target {
+    if #available(macOS 10.15, *) {
+        return .systemLibrary(name: "libzmq", pkgConfig: "libzmq")
+    } else {
+        return .binaryTarget(name: "libzmq", path: "libzmq.xcframework")
+    }
+}
+
 let package = Package(
     name: "CZeroMQ",
     products: [
-        .library(name: "CZeroMQ", targets: ["CZeroMQ"]),
+        .library(name: "CZeroMQ", targets: ["libzmq"]),
     ],
     targets: [
-        .binaryTarget(name: "CZeroMQ", path: "libzmq.xcframework")
+        libzmq()
     ]
 )
