@@ -7,7 +7,7 @@ func czeroMQPackage() -> Target {
     if #available(macOS 10.15, *) {
         return .systemLibrary(name: "CZeroMQ", pkgConfig: "libzmq")
     } else {
-        return .systemLibrary(name: "CZeroMQ", path: "../lib", pkgConfig: "libzmq")
+        return .binaryTarget(name: "CZeroMQ", path: "libzmq.xcframework")
     }
 }
 
