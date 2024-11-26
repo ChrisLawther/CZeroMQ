@@ -38,24 +38,23 @@ set -euo pipefail
 # set -x
 
 # Library versions (used to fetch source tarballs)
-SodiumVersion="1.0.18"
+SodiumVersion="1.0.20"
 ZmqVersion="4.3.4a"
+ZmqVersion="4.3.5"
 
 # Common settings:
 buildRoot="$( cd "$( dirname "$0" )" && mkdir -p .build && cd .build && pwd )"
 
 # Compiler options
-# OPT_FLAGS="-O3 -fembed-bitcode -fmodules"
 OPT_FLAGS="-O3 -fmodules"
 MAKE_JOBS=8
 
-MIN_IOS_VERSION=12.0
-MIN_TVOS_VERSION=12.0
-MIN_WATCHOS_VERSION=7.0
+MIN_IOS_VERSION=17.0
+MIN_TVOS_VERSION=17.0
+MIN_WATCHOS_VERSION=10.0
 
 Build() {
-    # Ensure -fembed-bitcode builds, as workaround for libtool macOS bug
-    export MACOSX_DEPLOYMENT_TARGET="10.4"
+    export MACOSX_DEPLOYMENT_TARGET="15.0"
     # Get the correct toolchain for target platforms
     export CC=$(xcrun --find --sdk "${SDK}" clang)
     export CXX=$(xcrun --find --sdk "${SDK}" clang++)
@@ -85,8 +84,7 @@ Build() {
 GetZmq() {
     echo "Fetching zmq..."
     Tar="zeromq-${ZmqVersion}.tar.gz"
-    # Url="https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${Tar}"
-    Url="https://github.com/ChrisLawther/libzmq/archive/refs/tags/v${ZmqVersion}.tar.gz"
+    Url="https://github.com/zeromq/libzmq/releases/download/v${ZmqVersion}/${Tar}"
 
     if [ ! -e "$buildRoot/../$Tar" ]
     then
@@ -109,7 +107,7 @@ GetSodium() {
 
     if [ ! -e "$buildRoot/../$Tar" ]
     then
-        curl -L -o "$buildRoot/../$Tar" https://github.com/jedisct1/libsodium/archive/${SodiumVersion}.tar.gz
+        curl -L -o "$buildRoot/../$Tar" "https://github.com/jedisct1/libsodium/releases/download/${SodiumVersion}-RELEASE/${Tar}"
     else
         echo "Already had '$Tar'"
     fi
@@ -190,7 +188,7 @@ BuildSims() {
 BuildZmq() {
     GetZmq
     echo "🛠 Building ZMQ..."
-    ZmqRoot="libzmq-${ZmqVersion}"
+    ZmqRoot="zeromq-${ZmqVersion}"
     BUILDDST="${buildRoot}/${ZmqRoot}/_build"
     PREFIX="${buildRoot}/universal"
     SodiumRoot="libsodium-${SodiumVersion}"
@@ -228,17 +226,17 @@ makeXcFramework() {
 
 	xcodebuild \
 		-create-xcframework \
-		-library libzmq-${ZmqVersion}/_build/simulator/iphonesimulator/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/simulator/iphonesimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library libzmq-${ZmqVersion}/_build/device/iphoneos/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/device/iphoneos/lib/libzmq.a \
 		-headers universal/include \
-		-library libzmq-${ZmqVersion}/_build/simulator/watchsimulator/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/simulator/watchsimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library libzmq-${ZmqVersion}/_build/device/watchos/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/device/watchos/lib/libzmq.a \
 		-headers universal/include \
-		-library libzmq-${ZmqVersion}/_build/simulator/appletvsimulator/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/simulator/appletvsimulator/lib/libzmq.a \
 		-headers universal/include \
-		-library libzmq-${ZmqVersion}/_build/device/appletvos/lib/libzmq.a \
+		-library zeromq-${ZmqVersion}/_build/device/appletvos/lib/libzmq.a \
 		-headers universal/include \
 		-output "$xcframework"
 }
